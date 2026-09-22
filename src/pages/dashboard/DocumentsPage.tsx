@@ -24,10 +24,12 @@ export default function DocumentsPage() {
   const [catFilter, setCatFilter] = useState("all");
   const [form, setForm] = useState({ title: "", category: "other", expiryDate: "", notes: "" });
   const fileRef = useRef<HTMLInputElement>(null);
+  const filePickerOpenRef = useRef(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const dialogOpen = searchParams.get("action") === "upload";
   const setDialogOpen = (open: boolean) => {
+    if (!open && filePickerOpenRef.current) return;
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       if (open) next.set("action", "upload");
@@ -136,7 +138,18 @@ export default function DocumentsPage() {
           <div className="space-y-3">
             <div className="space-y-1">
               <Label className="text-xs">File *</Label>
-               <Input ref={fileRef} type="file" accept="application/pdf,image/png,image/jpeg" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
+               <Input
+                 ref={fileRef}
+                 type="file"
+                 accept="application/pdf,image/png,image/jpeg"
+                 onPointerDown={() => { filePickerOpenRef.current = true; }}
+                 onClick={() => { filePickerOpenRef.current = true; }}
+                 onCancel={() => { filePickerOpenRef.current = false; }}
+                 onChange={(e) => {
+                   setSelectedFile(e.target.files?.[0] || null);
+                   window.setTimeout(() => { filePickerOpenRef.current = false; }, 250);
+                 }}
+               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1"><Label className="text-xs">Title *</Label><Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
