@@ -1,6 +1,6 @@
 import { PatientImageThumb } from "@/components/dashboard/PatientImageThumb";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -107,6 +107,7 @@ export default function PatientProfilePage() {
   const [docForm, setDocForm] = useState({ title: "", category: "other", notes: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedDocFile, setSelectedDocFile] = useState<File | null>(null);
+  const filePickerOpenRef = useRef(false);
   // Tab persisted in the URL (?tab=documents) so a reload or the mobile
   // file-picker lifecycle can't bounce the user back to Overview.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -123,6 +124,7 @@ export default function PatientProfilePage() {
   const imageDialogOpen = uploadAction === "upload-image";
   const docDialogOpen = uploadAction === "upload-document";
   const setUploadAction = (action: "upload-image" | "upload-document" | null) => {
+    if (action === null && filePickerOpenRef.current) return;
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       if (action) {
@@ -762,7 +764,17 @@ export default function PatientProfilePage() {
         <DialogContent>
           <DialogHeader><DialogTitle>Upload Patient Image</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1"><Label className="text-xs">File *</Label><Input type="file" accept="image/*" onChange={e => setSelectedFile(e.target.files?.[0] || null)} /></div>
+            <div className="space-y-1"><Label className="text-xs">File *</Label><Input
+              type="file"
+              accept="image/png,image/jpeg"
+              onPointerDown={() => { filePickerOpenRef.current = true; }}
+              onClick={() => { filePickerOpenRef.current = true; }}
+              onCancel={() => { filePickerOpenRef.current = false; }}
+              onChange={(e) => {
+                setSelectedFile(e.target.files?.[0] || null);
+                window.setTimeout(() => { filePickerOpenRef.current = false; }, 250);
+              }}
+            /></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Type</Label>
@@ -799,7 +811,17 @@ export default function PatientProfilePage() {
         <DialogContent>
           <DialogHeader><DialogTitle>Upload Patient Document</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1"><Label className="text-xs">File *</Label><Input type="file" accept="application/pdf,image/png,image/jpeg" onChange={e => setSelectedDocFile(e.target.files?.[0] || null)} /></div>
+            <div className="space-y-1"><Label className="text-xs">File *</Label><Input
+              type="file"
+              accept="application/pdf,image/png,image/jpeg"
+              onPointerDown={() => { filePickerOpenRef.current = true; }}
+              onClick={() => { filePickerOpenRef.current = true; }}
+              onCancel={() => { filePickerOpenRef.current = false; }}
+              onChange={(e) => {
+                setSelectedDocFile(e.target.files?.[0] || null);
+                window.setTimeout(() => { filePickerOpenRef.current = false; }, 250);
+              }}
+            /></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1"><Label className="text-xs">Title *</Label><Input value={docForm.title} onChange={e => setDocForm(f => ({ ...f, title: e.target.value }))} /></div>
               <div className="space-y-1">
